@@ -1,5 +1,6 @@
 package com.fastcampus.pharmacy.pharmacy.entity;
 
+import com.fastcampus.pharmacy.BaseTimeEntity;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Pharmacy {
+public class Pharmacy extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
