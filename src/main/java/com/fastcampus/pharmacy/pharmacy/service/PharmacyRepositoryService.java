@@ -2,11 +2,13 @@ package com.fastcampus.pharmacy.pharmacy.service;
 
 import com.fastcampus.pharmacy.pharmacy.entity.Pharmacy;
 import com.fastcampus.pharmacy.pharmacy.repository.PharmacyRepository;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Slf4j
 @Service
@@ -14,6 +16,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class PharmacyRepositoryService {
 
   private final PharmacyRepository pharmacyRepository;
+
+  // self invocation test
+  public void bar(List<Pharmacy> pharmacyList) {
+    log.info("bar CurrentTransactionName: "
+        + TransactionSynchronizationManager.getCurrentTransactionName());
+    foo(pharmacyList);
+  }
+
+  // self invocation test
+  @Transactional
+  public void foo(List<Pharmacy> pharmacyList) {
+    log.info("foo CurrentTransactionName: "
+        + TransactionSynchronizationManager.getCurrentTransactionName());
+    pharmacyList.forEach(pharmacy -> {
+      pharmacyRepository.save(pharmacy);
+      throw new RuntimeException("error"); //예외 발생
+    });
+  }
 
   @Transactional
   public void updateAddress(Long id, String address) {
