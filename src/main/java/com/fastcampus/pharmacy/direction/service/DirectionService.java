@@ -1,6 +1,7 @@
 package com.fastcampus.pharmacy.direction.service;
 
 import com.fastcampus.pharmacy.api.dto.DocumentDto;
+import com.fastcampus.pharmacy.api.service.KakaoCategorySearchService;
 import com.fastcampus.pharmacy.direction.entity.Direction;
 import com.fastcampus.pharmacy.direction.repository.DirectionRepository;
 import com.fastcampus.pharmacy.pharmacy.service.PharmacySearchService;
@@ -27,11 +28,13 @@ public class DirectionService {
 
   private final PharmacySearchService pharmacySearchService;
   private final DirectionRepository directionRepository;
+  private final KakaoCategorySearchService kakaoCategorySearchService;
 
   @Transactional
   public List<Direction> saveAll(List<Direction> directionList) {
-    if (CollectionUtils.isEmpty(directionList))
+    if (CollectionUtils.isEmpty(directionList)) {
       return Collections.emptyList();
+    }
     return directionRepository.saveAll(directionList);
   }
 
@@ -58,6 +61,31 @@ public class DirectionService {
                                 .sorted(Comparator.comparing(Direction::getDistance)) // 거리순
                                 .limit(MAX_SEARCH_COUNT) // 상위 3개
                                 .collect(Collectors.toList());
+  }
+
+  // pharmacy search by category kakao api
+  public List<Direction> buildDirectionListByCategoryApi(DocumentDto inputDocumentDto) {
+    if (Objects.isNull(inputDocumentDto)) {
+      return Collections.emptyList();
+    }
+
+    return kakaoCategorySearchService
+        .requestPharmacyCategorySearch(inputDocumentDto.getLatitude(),
+            inputDocumentDto.getLongitude(), RADIUS_KM)
+        .getDocumentList()
+        .stream().map(resultDocumentDto ->
+            Direction.builder()
+                     .inputAddress(inputDocumentDto.getAddressName())
+                     .inputLatitude(inputDocumentDto.getLatitude())
+                     .inputLongitude(inputDocumentDto.getLongitude())
+                     .targetPharmacyName(resultDocumentDto.getPlaceName())
+                     .targetAddress(resultDocumentDto.getAddressName())
+                     .targetLatitude(resultDocumentDto.getLatitude())
+                     .targetLongitude(resultDocumentDto.getLongitude())
+                     .distance(resultDocumentDto.getDistance() * 0.001) // km 단위
+                     .build())
+        .limit(MAX_SEARCH_COUNT)
+        .collect(Collectors.toList());
   }
 
   // Haversine formula
