@@ -2,6 +2,7 @@ package com.fastcampus.pharmacy.direction.service;
 
 import com.fastcampus.pharmacy.api.dto.DocumentDto;
 import com.fastcampus.pharmacy.direction.entity.Direction;
+import com.fastcampus.pharmacy.direction.repository.DirectionRepository;
 import com.fastcampus.pharmacy.pharmacy.service.PharmacySearchService;
 import java.util.Collections;
 import java.util.Comparator;
@@ -11,6 +12,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 @Slf4j
 @Service
@@ -23,6 +26,14 @@ public class DirectionService {
   private static final double RADIUS_KM = 10.0;
 
   private final PharmacySearchService pharmacySearchService;
+  private final DirectionRepository directionRepository;
+
+  @Transactional
+  public List<Direction> saveAll(List<Direction> directionList) {
+    if (CollectionUtils.isEmpty(directionList))
+      return Collections.emptyList();
+    return directionRepository.saveAll(directionList);
+  }
 
   public List<Direction> buildDirectionList(DocumentDto documentDto) {
     if (Objects.isNull(documentDto)) {
