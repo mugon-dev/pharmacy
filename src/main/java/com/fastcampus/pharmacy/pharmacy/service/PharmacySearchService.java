@@ -1,5 +1,6 @@
 package com.fastcampus.pharmacy.pharmacy.service;
 
+import com.fastcampus.pharmacy.pharmacy.cache.PharmacyRedisTemplateService;
 import com.fastcampus.pharmacy.pharmacy.dto.PharmacyDto;
 import com.fastcampus.pharmacy.pharmacy.entity.Pharmacy;
 import java.util.List;
@@ -14,10 +15,15 @@ import org.springframework.stereotype.Service;
 public class PharmacySearchService {
 
   private final PharmacyRepositoryService pharmacyRepositoryService;
+  private final PharmacyRedisTemplateService pharmacyRedisTemplateService;
 
   public List<PharmacyDto> searchPharmacyDtoList() {
 
     // redis
+    List<PharmacyDto> pharmacyDtoList = pharmacyRedisTemplateService.findAll();
+    if (!pharmacyDtoList.isEmpty()) {
+      return pharmacyDtoList;
+    }
 
     // db
     return pharmacyRepositoryService.findAll().stream()
